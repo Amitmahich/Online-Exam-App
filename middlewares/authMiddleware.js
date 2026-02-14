@@ -16,6 +16,7 @@ const authMiddleware = (req, res, next) => {
         return res.status(401).send({
           success: false,
           message: "Unauthorized User",
+          err,
         });
       } else {
         req.user = decoded;

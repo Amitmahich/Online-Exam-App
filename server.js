@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const dotenv = require("dotenv");
 const connectDb = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const examRoutes = require("./routes/examRoutes");
 
 //dotenv configuration
 dotenv.config();
@@ -21,6 +22,7 @@ app.use(morgan("dev"));
 
 //routes
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/exam", examRoutes);
 
 //routing kri hai for checking
 app.get("/", (req, res) => {
