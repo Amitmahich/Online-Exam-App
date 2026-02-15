@@ -27,7 +27,7 @@ const authorizeRoles = (allowedRoles) => {
       next();
     } catch (error) {
       console.log(error);
-      return res.status(500).send({
+      res.status(500).send({
         success: false,
         message: "Error in Role authorization",
         error,

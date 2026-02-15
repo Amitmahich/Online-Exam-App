@@ -1,3 +1,0 @@
-const addQuestionController = (req, res) => {
-  
-};
