@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const examModel = require("../models/examModel");
 const questionModel = require("../models/questionModel");
 //create exam
@@ -16,7 +17,23 @@ const createExamController = async (req, res) => {
         message: "Start time must be before end time",
       });
     }
+    //finding logged in user
     const user_id = req.user.id;
+
+    //for remove duplication
+    const existingExam = await examModel.findOne({
+      title: title.trim(),
+      startTime: startTime,
+      endTime: endTime,
+      createdBy: user_id,
+    });
+    if (existingExam) {
+      return res.status(400).send({
+        success: false,
+        message: "Exam already exists with same title and same user",
+      });
+    }
+
     const exam = await examModel.create({
       title,
       description,
@@ -72,11 +89,32 @@ const addQuestionController = async (req, res) => {
     }
 
     const exam = await examModel.findById(exam_id);
+
+    //Validate exam_id format
+    if (!mongoose.Types.ObjectId.isValid(exam_id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid exam ID",
+      });
+    }
+
     //exam available or not
     if (!exam) {
       return res.status(404).json({
         success: false,
         message: "Exam not found!",
+      });
+    }
+    //for remove duplicate
+    const existingQuestion = await questionModel.findOne({
+      exam: exam_id,
+      questionText,
+    });
+
+    if (existingQuestion) {
+      return res.status(400).send({
+        success: false,
+        message: "Question already exists in this exam",
       });
     }
     //adding questions
@@ -100,5 +138,49 @@ const addQuestionController = async (req, res) => {
     });
   }
 };
-
-module.exports = { createExamController, addQuestionController };
+//get-exam
+const getExamController = async (req, res) => {
+  try {
+    const { exam_id } = req.params;
+    const exam = await examModel.findById(exam_id);
+    if (!exam) {
+      return res.status(404).send({
+        success: false,
+        message: "Exam not found!",
+      });
+    }
+    const now = new Date();
+    if (now < exam.startTime || now > exam.endTime) {
+      return res.status(403).send({
+        success: false,
+        message: "Exam is not active!",
+      });
+    }
+    const questions = await questionModel
+      .find({ exam: exam_id })
+      .select("-correctAnswer");
+    res.send({
+      exam: {
+        _id: exam._id,
+        title: exam.title,
+        description: exam.description,
+        duration: exam.duration,
+        startTime: exam.startTime,
+        endTime: exam.endTime,
+      },
+      questions,
+    });
+  } catch (error) {
+    (console.log(error),
+      res.status(500).send({
+        success: false,
+        message: "Error in Get exam API",
+        error,
+      }));
+  }
+};
+module.exports = {
+  createExamController,
+  addQuestionController,
+  getExamController,
+};

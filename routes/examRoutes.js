@@ -4,6 +4,7 @@ const authorizeRoles = require("../middlewares/roleMiddleware");
 const {
   createExamController,
   addQuestionController,
+  getExamController,
 } = require("../controllers/examControllers");
 const router = express.Router();
 //create exam
@@ -20,4 +21,6 @@ router.post(
   authorizeRoles(["admin"]),
   addQuestionController,
 );
+//get exam
+router.get("/get-exam/:exam_id", authMiddleware, getExamController);
 module.exports = router;
