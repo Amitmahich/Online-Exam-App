@@ -5,6 +5,7 @@ const {
   createExamController,
   addQuestionController,
   getExamController,
+  startExamController,
 } = require("../controllers/examControllers");
 const router = express.Router();
 //create exam
@@ -23,4 +24,5 @@ router.post(
 );
 //get exam
 router.get("/get-exam/:exam_id", authMiddleware, getExamController);
+
 module.exports = router;
